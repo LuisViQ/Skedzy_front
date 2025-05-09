@@ -9,7 +9,7 @@ import axios from 'axios';
 export default function AllocationScheduler() {
   const [turmas, setTurmas] = useState([]);
   const [horarios, setHorarios] = useState([]);
-  const [dias] = useState(['segunda', 'terça', 'quarta', 'quinta', 'sexta']);
+  const [dias] = useState(['segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']);
   const [disciplinas, setDisciplinas] = useState([]);
   const [professores, setProfessores] = useState([]);
   const [salas, setSalas] = useState([]);
