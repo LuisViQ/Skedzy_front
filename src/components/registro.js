@@ -47,7 +47,7 @@ export default function AllocationScheduler() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const base = 'http://localhost:3030/api';
+    const base = 'http://10.0.0.51:3030/api';
     Promise.all([
       axios.get(`${base}/turmas`),
       axios.get(`${base}/horario`),
@@ -126,7 +126,7 @@ export default function AllocationScheduler() {
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
-      <Box sx={{ p: 3 }}>
+      <Box>
         <Grid container spacing={3}>
           <Grid item xs={12} md={3}>
             <Paper elevation={4} sx={{ p: 2 }}>

@@ -26,7 +26,7 @@ export default function Home() {
           alignItems: 'center',
           justifyContent: 'center',
           textAlign: 'center',
-          px: 2
+          
         }}
       >
         <Container maxWidth="md">
@@ -103,7 +103,7 @@ export default function Home() {
       </Box>
 
       {/* Footer */}
-      <Box sx={{ bgcolor: 'background.paper', py: 6, px: 2 }}>
+      <Box sx={{ bgcolor: 'background.paper', py: 6 }}>
         <Container maxWidth="sm" sx={{ textAlign: 'center' }}>
           <Avatar
             sx={{ width: 80, height: 80, mx: 'auto', mb: 2 }}
