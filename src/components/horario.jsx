@@ -1,8 +1,47 @@
 import React, { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import {
+  Box,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+  Button,
+  CssBaseline,
+  ThemeProvider
+} from '@mui/material';
+import { createTheme } from '@mui/material/styles';
 
-const ExportadorAlocacoes = () => {
+// Reutiliza o mesmo tema escuro harmonioso
+const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: { main: '#4db6ac', contrastText: '#ffffff' },
+    secondary: { main: '#ff8a65', contrastText: '#212121' },
+    background: {
+      default: '#121212',
+      paper: '#1e272c'
+    },
+    text: {
+      primary: '#e0f7fa',
+      secondary: '#b2dfdb'
+    },
+    action: {
+      hover: 'rgba(77, 182, 172, 0.08)'
+    }
+  },
+  shape: { borderRadius: 8 },
+  typography: {
+    fontFamily: 'Roboto, sans-serif'
+  }
+});
+
+export default function ExportadorAlocacoes() {
   const [dados, setDados] = useState([]);
 
   useEffect(() => {
@@ -16,80 +55,70 @@ const ExportadorAlocacoes = () => {
     const ws = XLSX.utils.json_to_sheet(dados);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Alocacoes');
-
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     const blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
     saveAs(blob, 'alocacoes.xlsx');
   };
 
-  // Função para agrupar as alocações por turma
-  const agruparPorTurma = () => {
-    return dados.reduce((acc, alocacao) => {
-      if (!acc[alocacao.turma]) {
-        acc[alocacao.turma] = [];
-      }
-      acc[alocacao.turma].push(alocacao);
-      return acc;
-    }, {});
-  };
-
-  const turmasAgrupadas = agruparPorTurma();
+  // Agrupa alocações por turma
+  const turmasAgrupadas = dados.reduce((acc, a) => {
+    acc[a.turma] = acc[a.turma] || [];
+    acc[a.turma].push(a);
+    return acc;
+  }, {});
 
   return (
-    <div style={{ padding: '16px' }}>
-      <h2 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '16px' }}>Alocações Registradas</h2>
+    <ThemeProvider theme={darkTheme}>
+      <CssBaseline />
+      <Box sx={{ p: 3, bgcolor: 'background.default' }}>
+        <Typography variant="h4" gutterBottom sx={{ color: 'primary.main' }}>
+          Alocações Registradas
+        </Typography>
 
-      {Object.keys(turmasAgrupadas).map((turma) => (
-        <div key={turma} style={{ marginBottom: '32px' }}>
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '12px' }}>Turma: {turma}</h3>
+        {Object.entries(turmasAgrupadas).map(([turma, items]) => (
+          <Paper key={turma} elevation={4} sx={{ mb: 3, p: 2, bgcolor: 'background.paper' }}>
+            <Typography variant="h6" sx={{ mb: 2, color: 'text.primary' }}>
+              Turma: {turma}
+            </Typography>
 
-          <div style={{ overflow: 'auto', maxHeight: '400px', marginBottom: '16px', border: '1px solid #ccc', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
-              <thead style={{ backgroundColor: '#f4f4f4' }}>
-                <tr>
-                  <th style={{ padding: '8px', border: '1px solid #ddd' }}>ID</th>
-                  <th style={{ padding: '8px', border: '1px solid #ddd' }}>Disciplina</th>
-                  <th style={{ padding: '8px', border: '1px solid #ddd' }}>Professor</th>
-                  <th style={{ padding: '8px', border: '1px solid #ddd' }}>Sala</th>
-                  <th style={{ padding: '8px', border: '1px solid #ddd' }}>Início</th>
-                  <th style={{ padding: '8px', border: '1px solid #ddd' }}>Fim</th>
-                  <th style={{ padding: '8px', border: '1px solid #ddd' }}>Dia</th>
-                </tr>
-              </thead>
-              <tbody>
-                {turmasAgrupadas[turma].map((linha) => (
-                  <tr key={linha.id_alocacao} style={{ textAlign: 'center', borderBottom: '1px solid #ddd' }}>
-                    <td style={{ padding: '8px' }}>{linha.id_alocacao}</td>
-                    <td style={{ padding: '8px' }}>{linha.disciplina}</td>
-                    <td style={{ padding: '8px' }}>{linha.professor || '—'}</td>
-                    <td style={{ padding: '8px' }}>{linha.sala || '—'}</td>
-                    <td style={{ padding: '8px' }}>{linha.inicio}</td>
-                    <td style={{ padding: '8px' }}>{linha.fim}</td>
-                    <td style={{ padding: '8px' }}>{linha.dia_semana}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ))}
+            <TableContainer sx={{ maxHeight: 300, borderRadius: 1 }}>
+              <Table stickyHeader>
+                <TableHead sx={{ backgroundColor: 'secondary.main' }}>
+                  <TableRow>
+                    {['ID', 'Disciplina', 'Professor', 'Sala', 'Início', 'Fim', 'Dia'].map(col => (
+                      <TableCell key={col} sx={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>
+                        {col}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {items.map(row => (
+                    <TableRow key={row.id_alocacao} hover>
+                      <TableCell align="center">{row.id_alocacao}</TableCell>
+                      <TableCell align="center">{row.disciplina}</TableCell>
+                      <TableCell align="center">{row.professor || '—'}</TableCell>
+                      <TableCell align="center">{row.sala || '—'}</TableCell>
+                      <TableCell align="center">{row.inicio}</TableCell>
+                      <TableCell align="center">{row.fim}</TableCell>
+                      <TableCell align="center">{row.dia_semana}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Paper>
+        ))}
 
-      <button
-        onClick={exportarExcel}
-        style={{
-          backgroundColor: '#4CAF50',
-          color: 'white',
-          padding: '10px 20px',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontSize: '1rem'
-        }}
-      >
-        📁 Exportar para Excel
-      </button>
-    </div>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={exportarExcel}
+          sx={{ mt: 2, borderRadius: 2 }}
+        >
+          📁 Exportar para Excel
+        </Button>
+      </Box>
+    </ThemeProvider>
   );
-};
-
-export default ExportadorAlocacoes;
+}
