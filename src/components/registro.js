@@ -41,7 +41,7 @@ export default function AllocationScheduler() {
   const [professores, setProfessores] = useState([]);
   const [salas, setSalas] = useState([]);
   const [alocacoes, setAlocacoes] = useState([]);
-  const [selectedTurma, setSelectedTurma] = useState('');
+  const [selectedTurma, setSelectedTurma] = useState('101'); // Inicializa com a turma 101
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ dia: '', horario: '', disciplina: '', professor: '', sala: '' });
   const [error, setError] = useState('');
@@ -62,6 +62,14 @@ export default function AllocationScheduler() {
       setProfessores(pRes.data);
       setSalas(sRes.data);
       setAlocacoes(aRes.data);
+
+      // Verifica se a turma 101 existe e a seleciona automaticamente
+      const turma101 = tRes.data.find(t => t.id_turma === '101');
+      if (turma101) {
+        setSelectedTurma('101');
+      } else if (tRes.data.length > 0) {
+        setSelectedTurma(tRes.data[0].id_turma); // Seleciona a primeira turma disponível como fallback
+      }
     });
   }, []);
 
@@ -101,16 +109,33 @@ export default function AllocationScheduler() {
 
   const handleSave = () => {
     const { dia, horario, disciplina, professor, sala } = form;
-    if (remainingHours(disciplina) <= 0) {
-      setError('Carga horária excedida!'); return;
+
+    // IDs das salas que podem ser usadas mais de uma vez
+    const reusableRooms = [1, 2, 3, 4, 5, 6, 7, 8];
+
+    if (!disciplina) {
+      setError('Selecione uma disciplina!');
+      return;
     }
+
+    // Validação para professor
     if (professor && alocacoes.some(a => a.dia_semana === dia && a.id_horario === horario && a.id_professor === professor)) {
-      setError('Professor já alocado!'); return;
+      setError('Professor já alocado neste horário!');
+      return;
     }
-    if (sala && alocacoes.some(a => a.dia_semana === dia && a.id_horario === horario && a.id_sala === sala)) {
-      setError('Sala ocupada!'); return;
+
+    // Validação para sala
+    if (
+      sala &&
+      !reusableRooms.includes(parseInt(sala)) && // Verifica se a sala não está na lista de reutilizáveis
+      alocacoes.some(a => a.dia_semana === dia && a.id_horario === horario && a.id_sala === sala)
+    ) {
+      setError('Sala já ocupada neste horário!');
+      return;
     }
-    axios.post('http://localhost:3030/api/alocacao', {
+
+    // Envia a alocação para o backend
+    axios.post('http://10.0.0.51:3030/api/alocacao', {
       id_turma: selectedTurma,
       id_disciplina: disciplina,
       id_professor: professor || null,
@@ -118,9 +143,12 @@ export default function AllocationScheduler() {
       id_horario: horario,
       dia_semana: dia,
     })
-    .then(() => axios.get('http://localhost:3030/api/alocacao'))
-    .then(res => { setAlocacoes(res.data); setOpen(false); })
-    .catch(e => setError(e.response?.data?.error || 'Erro desconhecido'));
+      .then(() => axios.get('http://10.0.0.51:3030/api/alocacao'))
+      .then(res => {
+        setAlocacoes(res.data);
+        setOpen(false);
+      })
+      .catch(e => setError(e.response?.data?.error || 'Erro desconhecido'));
   };
 
   return (
@@ -195,7 +223,7 @@ export default function AllocationScheduler() {
               <InputLabel>Sala</InputLabel>
               <Select value={form.sala} onChange={e => setForm(f => ({ ...f, sala: e.target.value }))}>
                 <MenuItem value="">Nenhum</MenuItem>
-                {salas.map(s => <MenuItem key={s.id_sala} value={s.id_sala} disabled={alocacoes.some(a => a.dia_semana === form.dia && a.id_horario === form.horario && a.id_sala === s.id_sala)}>{s.nome}</MenuItem>)}
+                {salas.map(s => <MenuItem key={s.id_sala} value={s.id_sala}>{s.nome}</MenuItem>)}
               </Select>
             </FormControl>
             {error && <Typography color="error" mt={2}>{error}</Typography>}

@@ -45,7 +45,7 @@ export default function ExportadorAlocacoes() {
   const [dados, setDados] = useState([]);
 
   useEffect(() => {
-    fetch('http://localhost:3030/api/visualizar')
+    fetch('http://10.0.0.51:3030/api/visualizar')
       .then(res => res.json())
       .then(data => setDados(data))
       .catch(err => console.error('Erro ao carregar dados:', err));
