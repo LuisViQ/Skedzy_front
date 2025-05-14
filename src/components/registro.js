@@ -47,7 +47,7 @@ export default function AllocationScheduler() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const base = 'http://10.0.0.51:3030/api';
+    const base = 'http://localhost:3030/api';
     Promise.all([
       axios.get(`${base}/turmas`),
       axios.get(`${base}/horario`),
@@ -110,40 +110,29 @@ export default function AllocationScheduler() {
   const handleSave = () => {
     const { dia, horario, disciplina, professor, sala } = form;
 
-    // IDs das salas que podem ser usadas mais de uma vez
-    const reusableRooms = [1, 2, 3, 4, 5, 6, 7, 8];
-
     if (!disciplina) {
       setError('Selecione uma disciplina!');
       return;
     }
 
-    // Validação para professor
+    
     if (professor && alocacoes.some(a => a.dia_semana === dia && a.id_horario === horario && a.id_professor === professor)) {
       setError('Professor já alocado neste horário!');
       return;
     }
 
-    // Validação para sala
-    if (
-      sala &&
-      !reusableRooms.includes(parseInt(sala)) && // Verifica se a sala não está na lista de reutilizáveis
-      alocacoes.some(a => a.dia_semana === dia && a.id_horario === horario && a.id_sala === sala)
-    ) {
-      setError('Sala já ocupada neste horário!');
-      return;
-    }
+   
 
     // Envia a alocação para o backend
-    axios.post('http://10.0.0.51:3030/api/alocacao', {
+    axios.post('http://localhost:3030/api/alocacao', {
       id_turma: selectedTurma,
       id_disciplina: disciplina,
-      id_professor: professor || null,
-      id_sala: sala || null,
+      id_professor: professor,
+      id_sala: sala,
       id_horario: horario,
       dia_semana: dia,
     })
-      .then(() => axios.get('http://10.0.0.51:3030/api/alocacao'))
+      .then(() => axios.get('http://localhost:3030/api/alocacao'))
       .then(res => {
         setAlocacoes(res.data);
         setOpen(false);

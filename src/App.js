@@ -70,7 +70,7 @@ export default function App() {
             )}
             <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
               <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-                <img src="/sistemalogo.png" alt="Logo IEMA" style={{ height: isMobile ? 30 : 50, marginRight: 12 }} />
+                <img src="/sistemalogo.jpeg" alt="Logo IEMA" style={{ height: isMobile ? 50 : 80, marginRight: 12, borderRadius: 10 }} />
                 
               </Box>
             </Box>
