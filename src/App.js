@@ -22,6 +22,8 @@ import Home from './components/home';
 import Horario from './components/horario';
 import RegistroHorarios from './components/registro';
 import Turmas from './components/turma';
+import Professor from './components/professor';
+import Sala from './components/sala';
 // Tema escuro harmonioso (mesmo do resto da app)
 const darkTheme = createTheme({
   palette: {
@@ -70,7 +72,7 @@ export default function App() {
             )}
             <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center' }}>
               <Box component={Link} to="/" sx={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-                <img src="/sistemalogo.jpeg" alt="Logo IEMA" style={{ height: isMobile ? 50 : 80, marginRight: 12, borderRadius: 10 }} />
+                <img src="/sistemalogo.png" alt="Logo IEMA" style={{ height: isMobile ? 40 : 70, marginRight: 15, marginLeft:5, marginTop: 5}} />
                 
               </Box>
             </Box>
@@ -110,6 +112,8 @@ export default function App() {
             <Route path="/horario" element={<Horario />} />
             <Route path="/registros" element={<RegistroHorarios />} />
             <Route path="/turma" element={<Turmas />} />
+            <Route path="/professor" element={<Professor />} />
+            <Route path="/sala" element={<Sala />} />
             <Route path="*" element={<Typography variant="h4" color="error">404 - Página não encontrada</Typography>} />
           </Routes>
         </Box>

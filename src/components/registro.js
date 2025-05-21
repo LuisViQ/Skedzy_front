@@ -6,6 +6,7 @@ import {
 } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import axios from 'axios';
+import * as XLSX from 'xlsx'; // Importa a biblioteca xlsx
 
 // Tema escuro com paleta moderna e harmoniosa
 const darkTheme = createTheme({
@@ -109,7 +110,7 @@ export default function AllocationScheduler() {
 
   const handleSave = () => {
     const { dia, horario, disciplina, professor, sala } = form;
-
+    const reusableRooms = [2, 7];
     if (!disciplina) {
       setError('Selecione uma disciplina!');
       return;
@@ -121,7 +122,15 @@ export default function AllocationScheduler() {
       return;
     }
 
-   
+    // Validação para sala
+    if (
+      sala &&
+      !reusableRooms.includes(parseInt(sala)) && // Verifica se a sala não está na lista de reutilizáveis
+      alocacoes.some(a => a.dia_semana === dia && a.id_horario === horario && a.id_sala === sala)
+    ) {
+      setError('Sala já ocupada neste horário!');
+      return;
+    }
 
     // Envia a alocação para o backend
     axios.post('http://localhost:3030/api/alocacao', {
@@ -140,6 +149,36 @@ export default function AllocationScheduler() {
       .catch(e => setError(e.response?.data?.error || 'Erro desconhecido'));
   };
 
+  const exportToExcel = () => {
+    if (!selectedTurma) {
+      alert('Selecione uma turma para exportar!');
+      return;
+    }
+
+    const data = alocacoes
+      .filter(a => a.id_turma === selectedTurma)
+      .map(a => {
+        const horario = horarios.find(h => h.id_horario === a.id_horario);
+        const disciplina = disciplinas.find(d => d.id_disciplina === a.id_disciplina);
+        const professor = professores.find(p => p.id_professor === a.id_professor);
+        const sala = salas.find(s => s.id_sala === a.id_sala);
+
+        return {
+          Dia: a.dia_semana,
+          Horário: horario ? `${horario.inicio} - ${horario.fim}` : '',
+          Disciplina: disciplina ? disciplina.nome : '',
+          Professor: professor ? professor.nome : '',
+          Sala: sala ? sala.nome : '',
+        };
+      });
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Alocações');
+
+    XLSX.writeFile(workbook, `alocacoes_turma_${selectedTurma}.xlsx`);
+  };
+
   return (
     <ThemeProvider theme={darkTheme}>
       <CssBaseline />
@@ -153,6 +192,14 @@ export default function AllocationScheduler() {
                   {turmas.map(t => <MenuItem key={t.id_turma} value={t.id_turma}>{t.nome}</MenuItem>)}
                 </Select>
               </FormControl>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={exportToExcel}
+                sx={{ mt: 2 }}
+              >
+                Exportar para Excel
+              </Button>
               <Typography variant="h6" mt={3}>Disciplinas (h rest.)</Typography>
               <Box mt={1}>
                 {disciplinas.map(d => (
