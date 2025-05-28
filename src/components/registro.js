@@ -214,7 +214,7 @@ export default function AllocationScheduler() {
             <TableContainer component={Paper} elevation={4} sx={{ borderRadius: 2 }}>
               <Table>
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: 'primary.main' }}>
+                  <TableRow sx={{ backgroundColor: 'secundary.main' }}>
                     <TableCell sx={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Horário</TableCell>
                     {dias.map(d => (
                       <TableCell key={d} sx={{ color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>{d}</TableCell>
