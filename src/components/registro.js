@@ -86,16 +86,21 @@ export default function AllocationScheduler() {
     return `${hours}h ${mins}m`;
   };
 
-  const remainingHours = discId => {
+  const remainingMinutes = discId => {
     const disc = disciplinas.find(d => d.id_disciplina === discId);
     const total = (disc?.carga_horaria || 0) * 60;
     const used = alocacoes
-      .filter(a => a.id_disciplina === discId)
+      .filter(a => a.id_disciplina === discId && a.id_turma === selectedTurma)
       .reduce((sum, a) => {
         const h = horarios.find(h => h.id_horario === a.id_horario);
         return sum + (h ? calcDurationInMinutes(h) : 0);
       }, 0);
-    return minutesToHoursAndMinutes(total - used);
+    return total - used;
+  };
+
+  const remainingHours = discId => {
+    const minutes = remainingMinutes(discId);
+    return minutesToHoursAndMinutes(minutes);
   };
 
   const getAllocationsForCell = (dia, horarioId) =>
@@ -116,7 +121,14 @@ export default function AllocationScheduler() {
       return;
     }
 
-    
+    // Verifica se a alocação vai deixar a carga horária negativa
+    const h = horarios.find(h => h.id_horario === horario);
+    const dur = h ? calcDurationInMinutes(h) : 0;
+    if (remainingMinutes(disciplina) - dur < 0) {
+      setError('Carga horária insuficiente para esta disciplina!');
+      return;
+    }
+
     if (professor && alocacoes.some(a => a.dia_semana === dia && a.id_horario === horario && a.id_professor === professor)) {
       setError('Professor já alocado neste horário!');
       return;
@@ -125,7 +137,7 @@ export default function AllocationScheduler() {
     // Validação para sala
     if (
       sala &&
-      !reusableRooms.includes(parseInt(sala)) && // Verifica se a sala não está na lista de reutilizáveis
+      !reusableRooms.includes(parseInt(sala)) &&
       alocacoes.some(a => a.dia_semana === dia && a.id_horario === horario && a.id_sala === sala)
     ) {
       setError('Sala já ocupada neste horário!');
